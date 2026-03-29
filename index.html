@@ -237,6 +237,50 @@
         document.getElementById('in-tj').value = "";
         document.getElementById('in-ky').value = "";
     }
+    
+    // [1] 데이터 내보내기 (JSON 파일로 다운로드)
+    function exportData() {
+        if (songs.length === 0) return alert("내보낼 데이터가 없습니다.");
+    
+        const dataStr = JSON.stringify(songs, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    
+        const exportFileDefaultName = `karaoke_backup_${currentUser}_${new Date().toISOString().slice(0,10)}.json`;
+    
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+
+    // [2] 데이터 가져오기 (파일 선택해서 불러오기)
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedSongs = JSON.parse(e.target.result);
+            
+                if (confirm("기존 목록을 지우고 가져온 파일로 교체할까요?\n(취소를 누르면 기존 목록에 추가됩니다.)")) {
+                    songs = importedSongs;
+                } else {
+                    // 중복 방지를 위해 ID 새로 부여하며 합치기
+                    const combined = [...songs, ...importedSongs.map(s => ({...s, id: Date.now() + Math.random()}))];
+                    songs = combined;
+                }
+            
+                saveToStorage();
+                render();
+                alert("데이터를 성공적으로 불러왔습니다!");
+            } catch (err) {
+                alert("올바른 백업 파일이 아닙니다.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
 </script>
 </body>
 </html>
