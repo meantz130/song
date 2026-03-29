@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 노래방 매니저 (4개 그룹)</title>
+    <title>나의 노래방 매니저 (검색 & 정렬)</title>
     <style>
         :root { 
             --bg: #f2f2f7; --card: #ffffff; --primary: #007aff; 
@@ -14,21 +14,25 @@
         .container { max-width: 500px; margin: 0 auto; }
 
         /* 로그인 영역 */
-        .login-section { background: #333; color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .login-section { background: #333; color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
         .login-section input { padding: 10px; border-radius: 8px; border: none; width: 60%; margin-bottom: 10px; font-size: 15px; }
         .user-info { display: flex; justify-content: space-between; align-items: center; }
 
         /* 입력 폼 */
         .input-form { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .input-form select, .input-form input { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        .input-form select, .input-form input { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .num-group { display: flex; gap: 8px; }
-        .save-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+        .save-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* 필터 탭 (고정) */
+        /* 검색 및 컨트롤 영역 (고정) */
         .controls { position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; border-bottom: 1px solid #d1d1d6; }
+        .search-bar { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 10px; box-sizing: border-box; font-size: 14px; }
         .tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; }
         .tab-btn { border: none; padding: 6px 14px; border-radius: 16px; background: #e5e5ea; font-size: 12px; white-space: nowrap; cursor: pointer; }
         .tab-btn.active { background: #3a3a3c; color: #fff; }
+
+        .sort-row { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 5px; }
+        .sort-btn { background: #fff; border: 1px solid #c7c7cc; padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; }
 
         /* 리스트 항목 */
         #song-list { list-style: none; padding: 0; margin: 0; }
@@ -54,11 +58,10 @@
         <div id="login-form">
             <h3 style="margin-top:0">노래방 리스트 접속</h3>
             <input type="text" id="user-input" placeholder="사용자 이름 입력">
-            <br>
-            <button class="save-btn" onclick="login()" style="width:60%">로그인</button>
+            <button class="save-btn" onclick="login()" style="width:60%; display:block; margin: 0 auto;">로그인</button>
         </div>
         <div id="user-status" class="user-info" style="display:none">
-            <span>👤 <b id="display-user"></b> 님 접속중</span>
+            <span>👤 <b id="display-user"></b> 님</span>
             <button class="btn-edit" onclick="logout()">로그아웃</button>
         </div>
     </div>
@@ -81,12 +84,17 @@
         </div>
 
         <div class="controls">
+            <input type="text" class="search-bar" id="search-input" oninput="render()" placeholder="제목 또는 가수 검색...">
             <div class="tabs">
                 <button class="tab-btn active" onclick="setFilter('ALL')">전체</button>
                 <button class="tab-btn" onclick="setFilter('K-POP')">K-POP</button>
                 <button class="tab-btn" onclick="setFilter('J-POP')">J-POP</button>
                 <button class="tab-btn" onclick="setFilter('POP')">POP</button>
                 <button class="tab-btn" onclick="setFilter('기타')">기타</button>
+            </div>
+            <div class="sort-row">
+                <button class="sort-btn" onclick="sortData('title')">제목순 ↓</button>
+                <button class="sort-btn" onclick="sortData('artist')">가수순 ↓</button>
             </div>
         </div>
 
@@ -100,14 +108,11 @@
     let currentFilter = "ALL";
     let editingId = null;
 
-    // 로그인
     function login() {
         const user = document.getElementById('user-input').value.trim();
         if(!user) return alert("이름을 입력하세요!");
-        
         currentUser = user;
-        songs = JSON.parse(localStorage.getItem('karaoke_v2_' + currentUser)) || [];
-        
+        songs = JSON.parse(localStorage.getItem('karaoke_v3_' + currentUser)) || [];
         document.getElementById('login-form').style.display = 'none';
         document.getElementById('user-status').style.display = 'flex';
         document.getElementById('display-user').innerText = currentUser;
@@ -115,7 +120,6 @@
         render();
     }
 
-    // 로그아웃
     function logout() {
         if(!confirm("로그아웃 하시겠습니까?")) return;
         currentUser = "";
@@ -126,7 +130,6 @@
         document.getElementById('user-input').value = "";
     }
 
-    // 저장 및 수정
     function handleSave() {
         const genre = document.getElementById('in-genre').value;
         const title = document.getElementById('in-title').value.trim();
@@ -140,9 +143,8 @@
             const idx = songs.findIndex(s => s.id === editingId);
             songs[idx] = { ...songs[idx], genre, title, artist, tj, ky };
             editingId = null;
-            const btn = document.getElementById('main-btn');
-            btn.innerText = "리스트에 추가하기";
-            btn.style.background = "var(--primary)";
+            document.getElementById('main-btn').innerText = "리스트에 추가하기";
+            document.getElementById('main-btn').style.background = "var(--primary)";
         } else {
             songs.push({ id: Date.now(), genre, title, artist, tj, ky });
         }
@@ -152,7 +154,6 @@
         clearForm();
     }
 
-    // 수정 모드 진입
     function startEdit(id) {
         const s = songs.find(x => x.id === id);
         document.getElementById('in-genre').value = s.genre;
@@ -160,15 +161,12 @@
         document.getElementById('in-artist').value = s.artist;
         document.getElementById('in-tj').value = s.tj === "-" ? "" : s.tj;
         document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky;
-
         editingId = id;
-        const btn = document.getElementById('main-btn');
-        btn.innerText = "내용 수정 완료";
-        btn.style.background = "var(--edit)";
+        document.getElementById('main-btn').innerText = "내용 수정 완료";
+        document.getElementById('main-btn').style.background = "var(--edit)";
         window.scrollTo({top:0, behavior:'smooth'});
     }
 
-    // 삭제
     function deleteSong(id) {
         if(confirm("정말 삭제할까요?")) {
             songs = songs.filter(s => s.id !== id);
@@ -178,15 +176,26 @@
     }
 
     function saveToStorage() {
-        localStorage.setItem('karaoke_v2_' + currentUser, JSON.stringify(songs));
+        localStorage.setItem('karaoke_v3_' + currentUser, JSON.stringify(songs));
     }
 
+    // [핵심 업데이트] 검색 및 필터링 렌더링 함수
     function render() {
         const list = document.getElementById('song-list');
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
         list.innerHTML = "";
-        const filtered = currentFilter === "ALL" ? songs : songs.filter(s => s.genre === currentFilter);
+
+        // 1. 장르 필터링 -> 2. 검색어 필터링
+        let displayData = currentFilter === "ALL" ? songs : songs.filter(s => s.genre === currentFilter);
         
-        filtered.forEach(s => {
+        if (searchTerm) {
+            displayData = displayData.filter(s => 
+                s.title.toLowerCase().includes(searchTerm) || 
+                s.artist.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        displayData.forEach(s => {
             const li = document.createElement('li');
             li.className = 'song-item';
             li.innerHTML = `
@@ -213,6 +222,12 @@
             const btnText = b.innerText === "전체" ? "ALL" : b.innerText;
             b.classList.toggle('active', btnText === g);
         });
+        render();
+    }
+
+    // [핵심 업데이트] 정렬 기능
+    function sortData(key) {
+        songs.sort((a, b) => a[key].localeCompare(b[key], 'ko'));
         render();
     }
 
