@@ -3,41 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Karaoke List</title>
+    <title>나의 노래방 리스트</title>
     <style>
-        :root { --bg: #f2f2f7; --card: #fff; --primary: #007aff; --tj: #e91e63; --ky: #03a9f4; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; font-size: 14px; }
-        .container { max-width: 500px; margin: 0 auto; }
+        :root { 
+            --bg: #f2f2f7; 
+            --card: #ffffff; 
+            --primary: #007aff; 
+            --edit: #ff9500;
+            --tj: #e91e63; 
+            --ky: #03a9f4; 
+            --text: #1c1c1e;
+        }
         
-        /* 입력 폼 */
-        .input-form { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .input-form input, .input-form select { width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 5px; }
-        .add-btn { flex: 1; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 10px; 
+            color: var(--text); 
+            line-height: 1.4;
+        }
+        
+        .container { max-width: 500px; margin: 0 auto; }
 
-        /* 필터 및 정렬 */
-        .controls { position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; border-bottom: 1px solid #ddd; }
-        .tabs { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 8px; }
-        .tab-btn { border: none; padding: 6px 12px; border-radius: 15px; background: #ddd; font-size: 12px; white-space: nowrap; }
-        .tab-btn.active { background: #333; color: #fff; }
-        .sort-row { display: flex; gap: 5px; justify-content: flex-end; }
-        .sort-btn { border: 1px solid #ccc; background: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        /* 입력 폼 디자인 */
+        .input-form { 
+            background: var(--card); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+        }
+        .input-form input, .input-form select { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 14px;
+        }
+        .num-inputs { display: flex; gap: 8px; }
+        .save-btn { 
+            width: 100%; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
-        /* 리스트 항목 */
+        /* 컨트롤 영역 (고정) */
+        .controls { 
+            position: sticky; 
+            top: 0; 
+            background: var(--bg); 
+            padding: 10px 0; 
+            z-index: 10; 
+            border-bottom: 1px solid #d1d1d6; 
+        }
+        .tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; }
+        .tab-btn { 
+            border: none; 
+            padding: 6px 14px; 
+            border-radius: 16px; 
+            background: #e5e5ea; 
+            font-size: 13px; 
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .tab-btn.active { background: #3a3a3c; color: #fff; }
+        
+        .sort-row { display: flex; gap: 8px; justify-content: flex-end; }
+        .sort-btn { 
+            border: 1px solid #c7c7cc; 
+            background: #fff; 
+            padding: 5px 10px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            cursor: pointer;
+        }
+
+        /* 리스트 스타일 */
         #song-list { list-style: none; padding: 0; margin-top: 10px; }
         .song-item { 
-            background: var(--card); margin-bottom: 6px; padding: 10px; 
-            border-radius: 8px; display: flex; align-items: center; justify-content: space-between;
+            background: var(--card); 
+            margin-bottom: 8px; 
+            padding: 12px; 
+            border-radius: 10px; 
+            display: flex; 
+            align-items: center; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .song-info { flex: 1; min-width: 0; }
-        .title { font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .artist { font-size: 12px; color: #777; }
+        .title { font-weight: 700; font-size: 15px; display: block; margin-bottom: 2px; }
+        .artist { font-size: 13px; color: #8e8e93; }
+        .genre-badge { font-size: 10px; font-weight: normal; color: #555; background: #eee; padding: 2px 5px; border-radius: 4px; margin-right: 5px; }
         
-        .numbers { display: flex; flex-direction: column; align-items: flex-end; min-width: 70px; margin: 0 10px; font-family: monospace; }
+        .numbers { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            min-width: 75px; 
+            margin: 0 12px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 13px;
+        }
         .t-red { color: var(--tj); font-weight: bold; }
         .k-blue { color: var(--ky); font-weight: bold; }
 
-        .del-btn { background: #ff3b30; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; }
+        .action-btns { display: flex; flex-direction: column; gap: 5px; }
+        .btn-edit { background: #f0f0f0; color: #333; border: 1px solid #ccc; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+        .btn-del { background: #ff3b30; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+
+        /* 모바일 터치 대응 */
+        @media (max-width: 380px) {
+            .title { font-size: 14px; }
+            .numbers { min-width: 65px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -48,27 +135,28 @@
             <option value="K-POP">K-POP</option>
             <option value="J-POP">J-POP</option>
             <option value="POP">POP</option>
-            <option value="ETC">기타</option>
+            <option value="기타">기타</option>
         </select>
-        <input type="text" id="in-title" placeholder="노래 제목">
-        <input type="text" id="in-artist" placeholder="가수 이름">
-        <div style="display:flex; gap:5px;">
-            <input type="number" id="in-tj" placeholder="TJ 번호">
-            <input type="number" id="in-ky" placeholder="KY 번호">
+        <input type="text" id="in-title" placeholder="노래 제목을 입력하세요">
+        <input type="text" id="in-artist" placeholder="가수 이름을 입력하세요">
+        <div class="num-inputs">
+            <input type="text" id="in-tj" placeholder="TJ 번호">
+            <input type="text" id="in-ky" placeholder="KY 번호">
         </div>
-        <button class="add-btn" onclick="addSong()">리스트에 추가하기</button>
+        <button id="main-button" class="save-btn" onclick="handleSave()">리스트에 추가하기</button>
     </div>
 
     <div class="controls">
         <div class="tabs" id="genre-tabs">
-            <button class="tab-btn active" onclick="filterGenre('ALL')">전체</button>
-            <button class="tab-btn" onclick="filterGenre('K-POP')">K-POP</button>
-            <button class="tab-btn" onclick="filterGenre('J-POP')">J-POP</button>
-            <button class="tab-btn" onclick="filterGenre('POP')">POP</button>
+            <button class="tab-btn active" onclick="setFilter('ALL')">전체</button>
+            <button class="tab-btn" onclick="setFilter('K-POP')">K-POP</button>
+            <button class="tab-btn" onclick="setFilter('J-POP')">J-POP</button>
+            <button class="tab-btn" onclick="setFilter('POP')">POP</button>
+            <button class="tab-btn" onclick="setFilter('기타')">기타</button>
         </div>
         <div class="sort-row">
-            <button class="sort-btn" onclick="sortData('title')">제목순</button>
-            <button class="sort-btn" onclick="sortData('artist')">가수순</button>
+            <button class="sort-btn" onclick="sortData('title')">제목순 ↑</button>
+            <button class="sort-btn" onclick="sortData('artist')">가수순 ↑</button>
         </div>
     </div>
 
@@ -76,121 +164,141 @@
 </div>
 
 <script>
-    // 1. 데이터 로드 및 초기화
-    let songs = JSON.parse(localStorage.getItem('myKaraokeData')) || [];
-    let currentGenre = "ALL";
-    let editId = null; // 현재 수정 중인 항목의 ID를 저장 (null이면 추가 모드)
+    // 전역 변수 설정
+    let songs = JSON.parse(localStorage.getItem('karaoke_db')) || [];
+    let currentFilter = "ALL";
+    let editingId = null; // 수정 중인 데이터의 ID (null이면 추가 모드)
 
-    // 2. 곡 추가 또는 수정 완료 함수
-    function saveSong() {
+    // 저장(추가/수정) 실행 함수
+    function handleSave() {
         const genre = document.getElementById('in-genre').value;
-        const title = document.getElementById('in-title').value;
-        const artist = document.getElementById('in-artist').value;
-        const tj = document.getElementById('in-tj').value || "-";
-        const ky = document.getElementById('in-ky').value || "-";
+        const title = document.getElementById('in-title').value.trim();
+        const artist = document.getElementById('in-artist').value.trim();
+        const tj = document.getElementById('in-tj').value.trim() || "-";
+        const ky = document.getElementById('in-ky').value.trim() || "-";
 
-        if(!title || !artist) return alert("제목과 가수를 입력해주세요!");
+        if (!title || !artist) {
+            alert("제목과 가수를 모두 입력해 주세요!");
+            return;
+        }
 
-        if (editId) {
-            // [수정 모드] 해당 ID를 가진 항목을 찾아 업데이트
-            const index = songs.findIndex(s => s.id === editId);
+        if (editingId) {
+            // 수정 모드
+            const index = songs.findIndex(s => s.id === editingId);
             if (index !== -1) {
                 songs[index] = { ...songs[index], genre, title, artist, tj, ky };
             }
-            editId = null; // 수정 완료 후 다시 추가 모드로 전환
-            document.querySelector('.add-btn').innerText = "리스트에 추가하기";
-            document.querySelector('.add-btn').style.background = "#007aff";
+            editingId = null;
+            resetUI();
         } else {
-            // [추가 모드] 새로운 항목 생성
-            songs.push({ id: Date.now(), genre, title, artist, tj, ky });
+            // 추가 모드
+            const newSong = { id: Date.now(), genre, title, artist, tj, ky };
+            songs.push(newSong);
         }
 
-        saveAndRender();
-        clearInputs();
+        saveToStorage();
+        render();
+        clearForm();
     }
 
-    // 3. 수정 버튼 클릭 시 데이터를 입력창으로 불러오는 함수
+    // 수정 모드 진입 함수
     function startEdit(id) {
-        const song = songs.find(s => s.id === id);
-        if (!song) return;
+        const target = songs.find(s => s.id === id);
+        if (!target) return;
 
-        // 입력창에 기존 값 채우기
-        document.getElementById('in-genre').value = song.genre;
-        document.getElementById('in-title').value = song.title;
-        document.getElementById('in-artist').value = song.artist;
-        document.getElementById('in-tj').value = song.tj === "-" ? "" : song.tj;
-        document.getElementById('in-ky').value = song.ky === "-" ? "" : song.ky;
+        // 폼에 데이터 채우기
+        document.getElementById('in-genre').value = target.genre;
+        document.getElementById('in-title').value = target.title;
+        document.getElementById('in-artist').value = target.artist;
+        document.getElementById('in-tj').value = target.tj === "-" ? "" : target.tj;
+        document.getElementById('in-ky').value = target.ky === "-" ? "" : target.ky;
 
-        // 수정 상태로 UI 변경
-        editId = id;
-        const btn = document.querySelector('.add-btn');
-        btn.innerText = "수정 완료하기";
-        btn.style.background = "#ff9500"; // 수정 중임을 알리는 주황색
-        
-        // 화면 맨 위(입력창)로 스크롤 이동
+        // 버튼 상태 변경
+        editingId = id;
+        const btn = document.getElementById('main-button');
+        btn.innerText = "내용 수정 완료";
+        btn.style.background = "var(--edit)";
+
+        // 상단으로 부드럽게 이동
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 4. 삭제 함수
+    // 삭제 함수
     function deleteSong(id) {
-        if(confirm("이 곡을 삭제할까요?")) {
-            if(editId === id) editId = null; // 수정 중인 곡 삭제 시 상태 초기화
+        if (confirm("정말 이 곡을 삭제하시겠습니까?")) {
+            if (editingId === id) {
+                editingId = null;
+                resetUI();
+            }
             songs = songs.filter(s => s.id !== id);
-            saveAndRender();
+            saveToStorage();
+            render();
         }
     }
 
-    // 5. 공통 로직 (저장, 렌더링, 입력창 비우기)
-    function saveAndRender() {
-        localStorage.setItem('myKaraokeData', JSON.stringify(songs));
+    // 데이터 영구 저장
+    function saveToStorage() {
+        localStorage.setItem('karaoke_db', JSON.stringify(songs));
+    }
+
+    // 화면 그리기 함수
+    function render() {
+        const listContainer = document.getElementById('song-list');
+        listContainer.innerHTML = "";
+
+        // 필터링 적용
+        const displayData = currentFilter === "ALL" 
+            ? songs 
+            : songs.filter(s => s.genre === currentFilter);
+
+        displayData.forEach(s => {
+            const li = document.createElement('li');
+            li.className = 'song-item';
+            li.innerHTML = `
+                <div class="song-info">
+                    <span class="title"><span class="genre-badge">${s.genre}</span>${s.title}</span>
+                    <span class="artist">${s.artist}</span>
+                </div>
+                <div class="numbers">
+                    <div><span class="t-red">T</span> ${s.tj}</div>
+                    <div><span class="k-blue">K</span> ${s.ky}</div>
+                </div>
+                <div class="action-btns">
+                    <button class="btn-edit" onclick="startEdit(${s.id})">수정</button>
+                    <button class="btn-del" onclick="deleteSong(${s.id})">삭제</button>
+                </div>
+            `;
+            listContainer.appendChild(li);
+        });
+    }
+
+    // 장르 필터 변경
+    function setFilter(genre) {
+        currentFilter = genre;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText === (genre === "ALL" ? "전체" : genre));
+        });
         render();
     }
 
-    function clearInputs() {
+    // 정렬 함수
+    function sortData(key) {
+        songs.sort((a, b) => a[key].localeCompare(b[key], 'ko'));
+        render();
+    }
+
+    // 기타 보조 함수
+    function clearForm() {
         document.getElementById('in-title').value = "";
         document.getElementById('in-artist').value = "";
         document.getElementById('in-tj').value = "";
         document.getElementById('in-ky').value = "";
     }
 
-    function render() {
-        const list = document.getElementById('song-list');
-        list.innerHTML = "";
-        
-        const filtered = currentGenre === "ALL" ? songs : songs.filter(s => s.genre === currentGenre);
-        
-        filtered.forEach(s => {
-            const li = document.createElement('li');
-            li.className = 'song-item';
-            li.innerHTML = `
-                <div class="song-info">
-                    <span class="title">${s.title}</span>
-                    <span class="artist"><small>[${s.genre}]</small> ${s.artist}</span>
-                </div>
-                <div class="numbers">
-                    <div><span class="t-red">T</span> ${s.tj}</div>
-                    <div><span class="k-blue">K</span> ${s.ky}</div>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px; margin-left:10px;">
-                    <button class="sort-btn" style="padding:4px 8px; font-size:10px;" onclick="startEdit(${s.id})">수정</button>
-                    <button class="del-btn" onclick="deleteSong(${s.id})">삭제</button>
-                </div>
-            `;
-            list.appendChild(li);
-        });
-    }
-
-    function filterGenre(genre) {
-        currentGenre = genre;
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText === (genre === 'ALL' ? '전체' : genre));
-        });
-        render();
-    }
-
-    function sortData(key) {
-        songs.sort((a, b) => a[key].localeCompare(b[key], 'ko'));
-        render();
+    function resetUI() {
+        const btn = document.getElementById('main-button');
+        btn.innerText = "리스트에 추가하기";
+        btn.style.background = "var(--primary)";
     }
 
     // 초기 실행
