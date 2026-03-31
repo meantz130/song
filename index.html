@@ -108,26 +108,62 @@
         <ul id="song-list"></ul>
     </div>
 </div>
+<script type="module">
+// Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+    
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyDQlqkpLGVpjAHPaBMhjMXcFccQaUFf82w",
+        authDomain: "song-18d1e.firebaseapp.com",
+        databaseURL: "https://song-18d1e-default-rtdb.asia-southeast1.firebasedatabase.app/",
+        projectId: "song-18d1e",
+        storageBucket: "song-18d1e.firebasestorage.app",
+        messagingSenderId: "697721275955",
+        appId: "1:697721275955:web:06ea3212e0dde840d68546",
+        measurementId: "G-F4T2YZH79E"
+    };
+// Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
 
-<script>
     let currentUser = "";
     let songs = [];
     let currentFilter = "ALL";
     let editingId = null;
-
-    function login() {
+// --- 전역 함수 등록 (HTML의 onclick에서 접근 가능하도록 window 객체에 할당) ---
+    window.login = async function() {
         const user = document.getElementById('user-input').value.trim();
         if(!user) return alert("이름을 입력하세요!");
-        currentUser = user;
-        songs = JSON.parse(localStorage.getItem('karaoke_v3_' + currentUser)) || [];
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('user-status').style.display = 'flex';
-        document.getElementById('display-user').innerText = currentUser;
-        document.getElementById('main-content').style.display = 'block';
-        render();
-    }
 
-    function logout() {
+        currentUser = user;
+
+// DB에서 해당 유저의 데이터 가져오기
+        const dbRef = ref(db);
+        try {
+            const snapshot = await get(child(dbRef, `users/${currentUser}/songs`));
+            if (snapshot.exists()) {
+                songs = snapshot.val();
+            } else {
+                songs = [];
+            }
+
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('user-status').style.display = 'flex';
+            document.getElementById('display-user').innerText = currentUser;
+            document.getElementById('main-content').style.display = 'block';
+            render();
+        } catch (error) {
+            console.error(error);
+            alert("데이터를 불러오는 중 오류가 발생했습니다.");
+        }
+    };
+    
+    window.logout = function() {
         if(!confirm("로그아웃 하시겠습니까?")) return;
         currentUser = "";
         songs = [];
@@ -135,9 +171,19 @@
         document.getElementById('user-status').style.display = 'none';
         document.getElementById('main-content').style.display = 'none';
         document.getElementById('user-input').value = "";
-    }
+    };
 
-    function handleSave() {
+    window.logout = function() {
+        if(!confirm("로그아웃 하시겠습니까?")) return;
+        currentUser = "";
+        songs = [];
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('user-status').style.display = 'none';
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('user-input').value = "";
+    };
+
+    window.handleSave = async function() {
         const genre = document.getElementById('in-genre').value;
         const title = document.getElementById('in-title').value.trim();
         const artist = document.getElementById('in-artist').value.trim();
@@ -156,52 +202,42 @@
             songs.push({ id: Date.now(), genre, title, artist, tj, ky });
         }
 
-        saveToStorage();
+        await saveToFirebase();
         render();
         clearForm();
-    }
+    };
 
-    function startEdit(id) {
-        const s = songs.find(x => x.id === id);
-        document.getElementById('in-genre').value = s.genre;
-        document.getElementById('in-title').value = s.title;
-        document.getElementById('in-artist').value = s.artist;
-        document.getElementById('in-tj').value = s.tj === "-" ? "" : s.tj;
-        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky;
-        editingId = id;
-        document.getElementById('main-btn').innerText = "내용 수정 완료";
-        document.getElementById('main-btn').style.background = "var(--edit)";
-        window.scrollTo({top:0, behavior:'smooth'});
-    }
-
-    function deleteSong(id) {
-        if(confirm("정말 삭제할까요?")) {
-            songs = songs.filter(s => s.id !== id);
-            saveToStorage();
-            render();
+    async function saveToFirebase() {
+        if (!currentUser) return;
+        try {
+            await set(ref(db, `users/${currentUser}/songs`), songs);
+        } catch (error) {
+            alert("저장 실패: " + error.message);
         }
     }
 
-    function saveToStorage() {
-        localStorage.setItem('karaoke_v3_' + currentUser, JSON.stringify(songs));
-    }
-
-    // [핵심 업데이트] 검색 및 필터링 렌더링 함수
-    function render() {
+    window.deleteSong = async function(id) {
+        if(confirm("정말 삭제할까요?")) {
+            songs = songs.filter(s => s.id !== id);
+            await saveToFirebase();
+            render();
+        }
+    };
+// 나머지 기존 UI 함수들 (render, sortData, setFilter 등)
+    window.render = function() {
         const list = document.getElementById('song-list');
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
         list.innerHTML = "";
 
-        // 1. 장르 필터링 -> 2. 검색어 필터링
         let displayData = currentFilter === "ALL" ? songs : songs.filter(s => s.genre === currentFilter);
-        
+
         if (searchTerm) {
             displayData = displayData.filter(s => 
-                s.title.toLowerCase().includes(searchTerm) || 
+                s.title.toLowerCase().includes(searchTerm) ||
                 s.artist.toLowerCase().includes(searchTerm)
             );
         }
-        
+
         displayData.forEach(s => {
             const li = document.createElement('li');
             li.className = 'song-item';
@@ -221,22 +257,34 @@
             `;
             list.appendChild(li);
         });
-    }
+    };
 
-    function setFilter(g) {
+    window.startEdit = function(id) {
+        const s = songs.find(x => x.id === id);
+        document.getElementById('in-genre').value = s.genre;
+        document.getElementById('in-title').value = s.title;
+        document.getElementById('in-artist').value = s.artist;
+        document.getElementById('in-tj').value = s.tj === "-" ? "" : s.tj;
+        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky;  
+        editingId = id;
+        document.getElementById('main-btn').innerText = "내용 수정 완료";
+        document.getElementById('main-btn').style.background = "var(--edit)";
+        window.scrollTo({top:0, behavior:'smooth'});
+    };
+
+    window.setFilter = function(g) {
         currentFilter = g;
         document.querySelectorAll('.tab-btn').forEach(b => {
             const btnText = b.innerText === "전체" ? "ALL" : b.innerText;
             b.classList.toggle('active', btnText === g);
         });
         render();
-    }
+    };
 
-    // [핵심 업데이트] 정렬 기능
-    function sortData(key) {
+    window.sortData = function(key) {
         songs.sort((a, b) => a[key].localeCompare(b[key], 'ko'));
         render();
-    }
+    };
 
     function clearForm() {
         document.getElementById('in-title').value = "";
@@ -244,50 +292,6 @@
         document.getElementById('in-tj').value = "";
         document.getElementById('in-ky').value = "";
     }
-    
-    // [1] 데이터 내보내기 (JSON 파일로 다운로드)
-    function exportData() {
-        if (songs.length === 0) return alert("내보낼 데이터가 없습니다.");
-    
-        const dataStr = JSON.stringify(songs, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
-        const exportFileDefaultName = `karaoke_backup_${currentUser}_${new Date().toISOString().slice(0,10)}.json`;
-    
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-    }
-
-    // [2] 데이터 가져오기 (파일 선택해서 불러오기)
-    function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedSongs = JSON.parse(e.target.result);
-            
-                if (confirm("기존 목록을 지우고 가져온 파일로 교체할까요?\n(취소를 누르면 기존 목록에 추가됩니다.)")) {
-                    songs = importedSongs;
-                } else {
-                    // 중복 방지를 위해 ID 새로 부여하며 합치기
-                    const combined = [...songs, ...importedSongs.map(s => ({...s, id: Date.now() + Math.random()}))];
-                    songs = combined;
-                }
-            
-                saveToStorage();
-                render();
-                alert("데이터를 성공적으로 불러왔습니다!");
-            } catch (err) {
-                alert("올바른 백업 파일이 아닙니다.");
-            }
-        };
-        reader.readAsText(file);
-    }
-
 </script>
 </body>
 </html>
