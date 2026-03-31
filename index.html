@@ -55,16 +55,18 @@
 
 <div class="container">
     <div id="auth-area" class="login-section">
-        <div id="login-form">
-            <h3 style="margin-top:0">노래방 리스트 접속</h3>
-            <input type="text" id="user-input" placeholder="사용자 이름 입력">
-            <button class="save-btn" onclick="login()">로그인</button>
-        </div>
-        <div id="user-status" class="user-info" style="display:none">
-            <span>👤 <b id="display-user"></b> 님</span>
-            <button class="btn-edit" onclick="logout()">로그아웃</button>
-        </div>
+       <div id="login-form">
+        <div style="font-size: 40px; margin-bottom: 10px;">🎤</div>
+        <h3>나의 노래방 매니저</h3>
+        <input type="text" id="user-input" placeholder="이름을 입력하세요">
+        <button class="login-btn" onclick="login()">시작하기</button>
     </div>
+
+    <div id="user-status" class="user-info" style="display:none">
+        <span>👤 <b id="display-user" style="color: var(--primary);"></b> 님 환영합니다!</span>
+        <button class="btn-edit" onclick="logout()" style="border-radius: 8px; padding: 5px 12px;">로그아웃</button>
+    </div>
+</div>
     <div id="main-content" style="display:none">
         <div class="input-form">
             <select id="in-genre">
