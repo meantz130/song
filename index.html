@@ -100,15 +100,13 @@
         <ul id="song-list"></ul>
     </div>
 </div>
-<script type="module">
-// Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
     
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+<script type="module">
+    // 1. 필요한 Firebase SDK 도구들을 모두 가져옵니다.
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+    // 2. Firebase 설정 (보내주신 설정값 유지)
     const firebaseConfig = {
         apiKey: "AIzaSyDQlqkpLGVpjAHPaBMhjMXcFccQaUFf82w",
         authDomain: "song-18d1e.firebaseapp.com",
@@ -119,7 +117,8 @@
         appId: "1:697721275955:web:06ea3212e0dde840d68546",
         measurementId: "G-F4T2YZH79E"
     };
-// Initialize Firebase
+
+    // 3. 초기화
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
@@ -127,16 +126,18 @@
     let songs = [];
     let currentFilter = "ALL";
     let editingId = null;
-// --- 전역 함수 등록 (HTML의 onclick에서 접근 가능하도록 window 객체에 할당) ---
+
+    // --- 전역 함수 등록 (HTML onclick에서 인식 가능하도록 window에 할당) ---
+
     window.login = async function() {
         const user = document.getElementById('user-input').value.trim();
         if(!user) return alert("이름을 입력하세요!");
 
         currentUser = user;
         const dbRef = ref(db);
-
+        
         try {
-// DB에서 해당 유저의 경로(users/이름/songs)를 조회합니다.
+            // DB에서 해당 유저의 경로(users/이름/songs)를 조회합니다.
             const snapshot = await get(child(dbRef, `users/${currentUser}/songs`));
             if (snapshot.exists()) {
                 songs = snapshot.val();
@@ -153,16 +154,6 @@
             console.error("Login Error:", error);
             alert("데이터를 불러오는 중 오류가 발생했습니다. 콘솔을 확인하세요.");
         }
-    };
-    
-    window.logout = function() {
-        if(!confirm("로그아웃 하시겠습니까?")) return;
-        currentUser = "";
-        songs = [];
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('user-status').style.display = 'none';
-        document.getElementById('main-content').style.display = 'none';
-        document.getElementById('user-input').value = "";
     };
 
     window.handleSave = async function() {
@@ -205,7 +196,17 @@
             render();
         }
     };
-// 나머지 기존 UI 함수들 (render, sortData, setFilter 등)
+
+    window.logout = function() {
+        if(!confirm("로그아웃 하시겠습니까?")) return;
+        currentUser = "";
+        songs = [];
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('user-status').style.display = 'none';
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('user-input').value = "";
+    };
+
     window.render = function() {
         const list = document.getElementById('song-list');
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
@@ -214,7 +215,7 @@
         let displayData = currentFilter === "ALL" ? songs : songs.filter(s => s.genre === currentFilter);
 
         if (searchTerm) {
-            displayData = displayData.filter(s =>
+            displayData = displayData.filter(s => 
                 s.title.toLowerCase().includes(searchTerm) ||
                 s.artist.toLowerCase().includes(searchTerm)
             );
@@ -247,7 +248,7 @@
         document.getElementById('in-title').value = s.title;
         document.getElementById('in-artist').value = s.artist;
         document.getElementById('in-tj').value = s.tj === "-" ? "" : s.tj;
-        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky; 
+        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky;  
         editingId = id;
         document.getElementById('main-btn').innerText = "내용 수정 완료";
         document.getElementById('main-btn').style.background = "var(--edit)";
