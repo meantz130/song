@@ -10,56 +10,13 @@
             --edit: #ff9500; --tj: #e91e63; --ky: #03a9f4; --text: #1c1c1e;
         }
 
-/* 기본 바디 스타일 유지 */
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; color: var(--text); font-size: 14px; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; color: var(--text); font-size: 14px; }
+        .container { max-width: 500px; margin: 0 auto; }
 
-/* [추가] 로그인 전 전용 배경 레이어 */
-        #bg-layer {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
-                        url('https://images.unsplash.com/photo-1549497538-303791108f94?q=80&w=1600&auto=format&fit=crop') center/cover;
-            z-index: 999; /* 최상단 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-/* [추가] 중앙 로그인 박스 디자인 */
-        .login-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 40px 30px;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
-            width: 90%;
-            max-width: 360px;
-            color: white;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        .login-box h3 { font-size: 24px; margin: 15px 0 25px; font-weight: 800; }
-
-        .login-box input { 
-            padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); 
-            width: 100%; margin-bottom: 15px; font-size: 16px; 
-            background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;
-        }
-
-        .login-box button { 
-            width: 100%; background: var(--primary); color: white; border: none; 
-            padding: 15px; border-radius: 12px; font-weight: bold; font-size: 17px; cursor: pointer;
-        }
-
-/* 로그인 후 상단 사용자 바 (기존 스타일) */
-        .user-info-bar { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #333; color: white; padding: 12px 20px; margin-bottom: 15px;
-        }
-
-        .container { max-width: 500px; margin: 0 auto; padding: 15px; }
+        /* 로그인 영역 */
+        .login-section { background: #333; color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
+        .login-section input { padding: 10px; border-radius: 8px; border: none; width: 60%; margin-bottom: 10px; font-size: 15px; }
+        .user-info { display: flex; justify-content: space-between; align-items: center; }
 
         /* 입력 폼 */
         .input-form { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
@@ -95,21 +52,19 @@
     </style>
 </head>
 <body>
-    <div id="bg-layer">
-        <div class="login-box">
-            <div style="font-size: 50px;">🎤</div>
-            <h3>노래방 매니저</h3>
-            <input type="text" id="user-input" placeholder="이름을 입력하세요">
-            <button onclick="login()">시작하기</button>
+
+<div class="container">
+    <div id="auth-area" class="login-section">
+        <div id="login-form">
+            <h3 style="margin-top:0">노래방 리스트 접속</h3>
+            <input type="text" id="user-input" placeholder="사용자 이름 입력">
+            <button class="save-btn" onclick="login()" style="width:60%; display:block; margin: 0 auto;">로그인</button>
+        </div>
+        <div id="user-status" class="user-info" style="display:none">
+            <span>👤 <b id="display-user"></b> 님</span>
+            <button class="btn-edit" onclick="logout()">로그아웃</button>
         </div>
     </div>
-
-    <div id="user-status" class="user-info-bar" style="display:none">
-        <span>👤 <b id="display-user" style="color: var(--primary);"></b> 님</span>
-        <button onclick="logout()" style="background:none; border:1px solid #666; color:white; border-radius:5px; padding:3px 8px;">로그아웃</button>
-    </div>
-
-    <div id="main-content" class="container" style="display:none">
 
     <div class="container">
     <div id="main-content" style="display:none">
