@@ -121,10 +121,8 @@
     };
 // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-</script>
+    const db = getDatabase(app);
 
-<script>
     let currentUser = "";
     let songs = [];
     let currentFilter = "ALL";
@@ -135,10 +133,10 @@
         if(!user) return alert("이름을 입력하세요!");
 
         currentUser = user;
-
-// DB에서 해당 유저의 데이터 가져오기
         const dbRef = ref(db);
+
         try {
+// DB에서 해당 유저의 경로(users/이름/songs)를 조회합니다.
             const snapshot = await get(child(dbRef, `users/${currentUser}/songs`));
             if (snapshot.exists()) {
                 songs = snapshot.val();
@@ -152,21 +150,11 @@
             document.getElementById('main-content').style.display = 'block';
             render();
         } catch (error) {
-            console.error(error);
-            alert("데이터를 불러오는 중 오류가 발생했습니다.");
+            console.error("Login Error:", error);
+            alert("데이터를 불러오는 중 오류가 발생했습니다. 콘솔을 확인하세요.");
         }
     };
     
-    window.logout = function() {
-        if(!confirm("로그아웃 하시겠습니까?")) return;
-        currentUser = "";
-        songs = [];
-        document.getElementById('login-form').style.display = 'block';
-        document.getElementById('user-status').style.display = 'none';
-        document.getElementById('main-content').style.display = 'none';
-        document.getElementById('user-input').value = "";
-    };
-
     window.logout = function() {
         if(!confirm("로그아웃 하시겠습니까?")) return;
         currentUser = "";
@@ -226,7 +214,7 @@
         let displayData = currentFilter === "ALL" ? songs : songs.filter(s => s.genre === currentFilter);
 
         if (searchTerm) {
-            displayData = displayData.filter(s => 
+            displayData = displayData.filter(s =>
                 s.title.toLowerCase().includes(searchTerm) ||
                 s.artist.toLowerCase().includes(searchTerm)
             );
@@ -259,7 +247,7 @@
         document.getElementById('in-title').value = s.title;
         document.getElementById('in-artist').value = s.artist;
         document.getElementById('in-tj').value = s.tj === "-" ? "" : s.tj;
-        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky;  
+        document.getElementById('in-ky').value = s.ky === "-" ? "" : s.ky; 
         editingId = id;
         document.getElementById('main-btn').innerText = "내용 수정 완료";
         document.getElementById('main-btn').style.background = "var(--edit)";
