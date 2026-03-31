@@ -58,21 +58,13 @@
         <div id="login-form">
             <h3 style="margin-top:0">노래방 리스트 접속</h3>
             <input type="text" id="user-input" placeholder="사용자 이름 입력">
-            <button class="save-btn" onclick="login()" style="width:60%; display:block; margin: 0 auto;">로그인</button>
+            <button class="save-btn" onclick="login()">로그인</button>
         </div>
         <div id="user-status" class="user-info" style="display:none">
             <span>👤 <b id="display-user"></b> 님</span>
             <button class="btn-edit" onclick="logout()">로그아웃</button>
         </div>
     </div>
-<div style="margin-top: 10px; display: flex; gap: 5px;">
-    <button class="btn-edit" onclick="exportData()" style="flex:1">💾 데이터 백업(내보내기)</button>
-    
-        <label class="btn-edit" style="display:inline-block; cursor:pointer;">
-        📂 데이터 복구(가져오기)
-        <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
-    </label>
-</div>
     <div id="main-content" style="display:none">
         <div class="input-form">
             <select id="in-genre">
